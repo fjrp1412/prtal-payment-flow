@@ -1,13 +1,16 @@
 <template>
   <div id="app">
-    <h1>Hello world</h1>
+    <PaymentsComponent></PaymentsComponent>
   </div>
 </template>
 
 <script>
+import PaymentsComponent from "./components/Payments.vue";
 export default {
   name: "App",
-  components: {},
+  components: {
+    PaymentsComponent,
+  },
 };
 </script>
 
