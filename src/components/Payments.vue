@@ -18,15 +18,43 @@
         </div>
       </div>
       <div class="payment-container__dues">
-        <h1>Dues</h1>
+        <div class="payment-container__new-payment">
+          <div class="circle">
+            <img src="../assets/add-plus.svg" alt="" />
+          </div>
+        </div>
+        <DueComponent
+          title="Anticipo 1"
+          :amount="182"
+          date="22 Ene, 2022"
+        ></DueComponent>
+        <DueComponent
+          title="Anticipo 2"
+          :amount="182"
+          date="22 Ene, 2022"
+        ></DueComponent>
+        <DueComponent
+          title="Anticipo 3"
+          :amount="182"
+          date="22 Ene, 2022"
+        ></DueComponent>
+        <DueComponent
+          title="Anticipo 4"
+          :amount="182"
+          date="22 Ene, 2022"
+        ></DueComponent>
       </div>
     </div>
   </main>
 </template>
 
 <script>
+import DueComponent from "./Due.vue";
 export default {
   name: "PaymentsComponent",
+  components: {
+    DueComponent,
+  },
   data() {
     return {};
   },
@@ -87,5 +115,39 @@ export default {
 .payment-container__head .head__options .options__amount--strong {
   font-weight: 600;
   size: 24px;
+}
+
+.payment-container__dues {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 100%;
+  margin-top: 50px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.payment-container__new-payment {
+  align-self: flex-start;
+  width: 50px;
+  height: 50px;
+}
+
+.payment-container__new-payment .circle {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: grey;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(226, 232, 240, 1);
+  cursor: pointer;
+}
+
+.payment-container__new-payment .circle img {
+  width: 20px;
+  height: 20px;
 }
 </style>
