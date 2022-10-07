@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <PaymentsComponent></PaymentsComponent>
+    <PortalTarget name="app"></PortalTarget>
   </div>
 </template>
 
