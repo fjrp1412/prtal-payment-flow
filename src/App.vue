@@ -16,6 +16,7 @@ export default {
 
 <style>
 * {
+  box-sizing: content-box;
   margin: 0px;
   padding: 0px;
 }
