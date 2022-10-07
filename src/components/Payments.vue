@@ -38,14 +38,16 @@
         </div>
       </div>
       <div class="payment-container__dues" :key="dues.length">
-        <DueComponent
-          v-for="due in duesInOrder"
-          :due="due"
-          :key="due.id"
-          @updateDue="updateDues"
-          @deleteDue="deleteDue"
-          :editing="editing"
-        ></DueComponent>
+        <div class="dues__node" v-for="due in duesInOrder" :key="due.id">
+          <DueComponent
+            :due="due"
+            @updateDue="updateDues"
+            @deleteDue="deleteDue"
+            :editing="editing"
+          ></DueComponent>
+          <hr :class="`line ${due.status === 'paid' ? 'green' : 'blue'}`" />
+        </div>
+
         <div class="payment-container__new-payment" @click="createDue">
           <div class="circle">
             <img src="../assets/add-plus.svg" alt="" />
@@ -143,6 +145,9 @@ export default {
 </script>
 
 <style scoped>
+.payment-container {
+  width: 100%;
+}
 .payment-container__head {
   display: flex;
   width: 100%;
@@ -215,24 +220,54 @@ export default {
 }
 
 .payment-container__dues {
-  width: 100%;
+  position: relative;
   display: grid;
-  align-items: center;
+  align-items: flex-start;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-auto-columns: minmax(200px, 1fr);
   grid-auto-flow: column;
   justify-items: flex-start;
   height: 100%;
-  margin: 50px 0px 0px 40px;
+  width: 100%;
+  margin: 50px 0px 0px 0px;
   overflow-x: auto;
   white-space: nowrap;
   padding-bottom: 20px;
+  padding-left: 5px;
+}
+
+.payment-container__dues .dues__node {
+  width: 100%;
+  position: relative;
+}
+
+.payment-container__dues .line {
+  position: absolute;
+  min-width: 100%;
+  height: 2px;
+  z-index: -1;
+  top: 15%;
+  left: 50%;
+  border: none;
+}
+
+.payment-container__dues .green {
+  background-color: rgba(5, 150, 105, 1);
+}
+.payment-container__dues .blue {
+  background-color: rgba(29, 78, 216, 1);
 }
 
 .payment-container__new-payment {
-  align-self: flex-start;
-  width: 50px;
-  height: 50px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.payment-container__new-payment .line-new-payment {
+  top: 15%;
 }
 
 .payment-container__new-payment .circle {
