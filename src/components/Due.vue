@@ -75,11 +75,7 @@
         :disabled="mutableDue.status === 'paid'"
       />
       <div class="editable-amount">
-        <input
-          type="text"
-          v-model="mutableDue.amount"
-          :disabled="mutableDue.status === 'paid'"
-        />
+        <input type="text" v-model="mutableDue.amount" disabled />
         <span class="amount__currency">UF</span>
       </div>
       <div class="editable-percentage">
@@ -134,6 +130,9 @@ export default {
     editing: {
       type: Boolean,
     },
+    totalDue: {
+      type: Number,
+    },
   },
   data() {
     return {
@@ -143,12 +142,17 @@ export default {
   },
   methods: {
     updatePercentage(value) {
-      this.mutableDue.percentage += value;
+      this.mutableDue.percentage =
+        parseFloat(this.mutableDue.percentage) + value;
       if (this.mutableDue.percentage < 0) {
         this.mutableDue.percentage = 0;
       } else if (this.mutableDue.percentage > 100) {
         this.mutableDue.percentage = 100;
       }
+      this.mutableDue.amount = (
+        (parseFloat(this.mutableDue.percentage) * parseFloat(this.totalDue)) /
+        100
+      ).toFixed(1);
     },
     deleteDue() {
       this.$emit("deleteDue", this.mutableDue.id);
@@ -164,7 +168,6 @@ export default {
   watch: {
     mutableDue: {
       handler(newValue) {
-        console.log(newValue);
         this.$emit("updateDue", { id: this.due.id, value: newValue });
       },
       deep: true,

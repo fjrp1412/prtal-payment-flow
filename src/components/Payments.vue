@@ -44,6 +44,7 @@
             @updateDue="updateDues"
             @deleteDue="deleteDue"
             :editing="editing"
+            :totalDue="TOTALTOPAY"
           ></DueComponent>
           <hr :class="`line ${due.status === 'paid' ? 'green' : 'blue'}`" />
         </div>
