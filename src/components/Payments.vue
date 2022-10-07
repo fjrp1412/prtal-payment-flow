@@ -123,9 +123,10 @@ export default {
       this.dues = this.dues
         .map((item) => {
           if (item.id === id - 1) {
-            item.amount = parseInt(item.amount) + parseInt(removedDue.amount);
+            item.amount =
+              parseFloat(item.amount) + parseFloat(removedDue.amount);
             item.percentage =
-              parseInt(item.percentage) + parseInt(removedDue.percentage);
+              parseFloat(item.percentage) + parseFloat(removedDue.percentage);
           }
 
           return item;
