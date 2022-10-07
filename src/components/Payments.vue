@@ -7,9 +7,29 @@
           <img src="../assets/arrow-down.svg" alt="open nav" />
         </div>
         <div class="head__options">
-          <div class="options__edit">
+          <div
+            v-if="!editing"
+            class="options__edit"
+            @click="
+              () => {
+                editing = !editing;
+              }
+            "
+          >
             <span>Editar</span>
             <img src="../assets/edit-pencil.svg" alt="edit" />
+          </div>
+          <div v-else class="options__edit">
+            <button
+              type="button"
+              @click="
+                () => {
+                  editing = !editing;
+                }
+              "
+            >
+              Guardar
+            </button>
           </div>
           <div class="options__amount">
             <span class="options__amount--light">Por cobrar:</span>
@@ -17,32 +37,19 @@
           </div>
         </div>
       </div>
-      <div class="payment-container__dues">
-        <div class="payment-container__new-payment">
+      <div class="payment-container__dues" :key="dues.length">
+        <DueComponent
+          v-for="due in duesInOrder"
+          :due="due"
+          :key="due.id"
+          @updateDue="updateDues"
+          :editing="editing"
+        ></DueComponent>
+        <div class="payment-container__new-payment" @click="createDue">
           <div class="circle">
             <img src="../assets/add-plus.svg" alt="" />
           </div>
         </div>
-        <DueComponent
-          title="Anticipo 1"
-          :amount="182"
-          date="22 Ene, 2022"
-        ></DueComponent>
-        <DueComponent
-          title="Anticipo 2"
-          :amount="182"
-          date="22 Ene, 2022"
-        ></DueComponent>
-        <DueComponent
-          title="Anticipo 3"
-          :amount="182"
-          date="22 Ene, 2022"
-        ></DueComponent>
-        <DueComponent
-          title="Anticipo 4"
-          :amount="182"
-          date="22 Ene, 2022"
-        ></DueComponent>
       </div>
     </div>
   </main>
@@ -50,13 +57,72 @@
 
 <script>
 import DueComponent from "./Due.vue";
+import { get, post } from "../utils/api.js";
 export default {
   name: "PaymentsComponent",
   components: {
     DueComponent,
   },
   data() {
-    return {};
+    return {
+      dues: [],
+      totalToPay: 182,
+      editing: false,
+    };
+  },
+  beforeMount() {
+    console.log("Before mount");
+    const dues = get();
+    if (dues) {
+      this.dues = dues;
+    }
+    console.log(this.dues);
+  },
+  methods: {
+    updateDues(data) {
+      this.dues = this.dues.map((item) =>
+        item.id === data.id ? { ...data.value } : item
+      );
+      post([...this.dues]);
+    },
+    calculateAmount() {
+      if (this.dues.length === 0) {
+        return { amount: this.totalToPay, percentage: 100 };
+      }
+      const amount = (this.dues[this.dues.length - 1].amount / 2).toFixed(1);
+      const percentage = (
+        this.dues[this.dues.length - 1].percentage / 2
+      ).toFixed(1);
+
+      return { amount, percentage };
+    },
+    createDue() {
+      const { amount, percentage } = this.calculateAmount();
+      this.dues.push({
+        title: "Cuota",
+        amount: amount,
+        order: this.dues.length + 1,
+        id: this.dues.length + 1,
+        percentage: percentage,
+        date: new Date().toLocaleDateString(),
+      });
+      if (this.dues.length >= 2) {
+        const orderPrevious = this.dues.slice(-1)[0].order - 1;
+        this.dues = this.dues.map((item) =>
+          item.order === orderPrevious ? { ...item, amount, percentage } : item
+        );
+        console.log("dues previous modificado", this.dues);
+      }
+
+      post([...this.dues]);
+    },
+  },
+  computed: {
+    duesInOrder() {
+      return [...this.dues].sort((a, b) =>
+        parseInt(a.order) < parseInt(b.order) ? -1 : 1
+      );
+    },
   },
 };
 </script>
@@ -86,6 +152,7 @@ export default {
 .payment-container__head .head__options {
   display: flex;
   margin-right: 20px;
+  text-align: center;
 }
 
 .payment-container__head .head__options .options__edit {
@@ -105,6 +172,21 @@ export default {
   margin-left: 5px;
 }
 
+.payment-container__head .head__options .options__edit button {
+  width: 75px;
+  height: 35px;
+  background-color: rgba(29, 78, 216, 1);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.payment-container__head .head__options .options__amount {
+  display: flex;
+  align-items: center;
+}
+
 .payment-container__head .head__options .options__amount--light {
   font-weight: 400;
   size: 24px;
@@ -119,13 +201,17 @@ export default {
 
 .payment-container__dues {
   width: 100%;
-  display: flex;
-  justify-content: space-around;
+  display: grid;
   align-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-auto-columns: minmax(200px, 1fr);
+  grid-auto-flow: column;
+  justify-items: flex-start;
   height: 100%;
-  margin-top: 50px;
+  margin: 50px 0px 0px 40px;
   overflow-x: auto;
   white-space: nowrap;
+  padding-bottom: 20px;
 }
 
 .payment-container__new-payment {
