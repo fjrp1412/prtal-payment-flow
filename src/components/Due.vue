@@ -1,6 +1,9 @@
 <template>
   <div class="due-container" v-if="!editing">
-    <div class="due-container__circle"></div>
+    <div
+      :class="`due-container__circle ${mutableDue.status}`"
+      @click="toggleModal"
+    ></div>
     <div class="due-container__info">
       <span class="title">{{ mutableDue.title }}</span>
       <span class="amount">
@@ -9,31 +12,102 @@
         }}
         %)</span
       >
-      <span class="date">{{ mutableDue.date }}</span>
+      <span class="date" v-if="!mutableDue.paidDate">{{
+        mutableDue.expiredDate
+      }}</span>
+      <span class="date date--paid" v-else
+        >Pagado {{ mutableDue.paidDate }}</span
+      >
     </div>
+    <ModalComponent :show="openModal" @closeModal="toggleModal">
+      <div class="form-wrapper">
+        <div class="form__information">
+          <h1 class="form-title">Modificar Estados</h1>
+          <span class="form-subtitle"
+            >Selecciona el estado en que se encuentra el pago</span
+          >
+        </div>
+
+        <div class="form__multiselect">
+          <label for="status">Estado</label>
+          <Multiselect
+            name="status"
+            :options="['pending', 'paid']"
+            v-model="mutableDue.status"
+          ></Multiselect>
+        </div>
+
+        <div class="form__datepicker" v-if="mutableDue.status === 'paid'">
+          <label for="paidDate">Fecha de pago</label>
+          <DatePicker
+            class="datepicker"
+            v-model="mutableDue.paidDate"
+            placeholder
+            format="DD/MM/YYYY"
+            value-type="format"
+          ></DatePicker>
+        </div>
+
+        <div class="form-buttons">
+          <button
+            type="button"
+            class="form__button--delete"
+            @click="deleteDue"
+          ></button>
+          <button type="button" class="form__button--save" @click="toggleModal">
+            Guardar
+          </button>
+        </div>
+      </div>
+    </ModalComponent>
   </div>
 
   <div class="due-container" v-else>
-    <div :class="`due-container__circle ${editing && 'highlight'}`"></div>
+    <div
+      :class="`due-container__circle
+      ${editing && 'highlight'}
+      ${mutableDue.status}`"
+    ></div>
     <div class="due-container__editable-info">
-      <input class="editable-title" v-model="mutableDue.title" />
+      <input
+        class="editable-title"
+        v-model="mutableDue.title"
+        :disabled="mutableDue.status === 'paid'"
+      />
       <div class="editable-amount">
-        <input type="text" v-model="mutableDue.amount" />
+        <input
+          type="text"
+          v-model="mutableDue.amount"
+          :disabled="mutableDue.status === 'paid'"
+        />
         <span class="amount__currency">UF</span>
       </div>
       <div class="editable-percentage">
-        <button type="button" @click="updatePercentage(-1)">-</button>
+        <button
+          type="button"
+          :disabled="mutableDue.status === 'paid'"
+          @click="updatePercentage(-1)"
+        >
+          -
+        </button>
         <span>{{ mutableDue.percentage }} %</span>
-        <button type="button" @click="updatePercentage(1)">+</button>
+        <button
+          type="button"
+          :disabled="mutableDue.status === 'paid'"
+          @click="updatePercentage(1)"
+        >
+          +
+        </button>
       </div>
 
       <div class="editable-date">
         <DatePicker
           class="datepicker"
-          v-model="mutableDue.date"
+          v-model="mutableDue.expiredDate"
           placeholder
           format="DD/MM/YYYY"
           value-type="format"
+          :disabled="mutableDue.status === 'paid'"
         ></DatePicker>
       </div>
     </div>
@@ -41,13 +115,17 @@
 </template>
 
 <script>
-import DatePicker from "vue2-datepicker";
 import "vue2-datepicker/index.css";
+import DatePicker from "vue2-datepicker";
+import Multiselect from "vue-multiselect";
+import ModalComponent from "./Modal.vue";
 
 export default {
   name: "DueComponent",
   components: {
     DatePicker,
+    ModalComponent,
+    Multiselect,
   },
   props: {
     due: {
@@ -60,6 +138,7 @@ export default {
   data() {
     return {
       mutableDue: { ...this.due },
+      openModal: false,
     };
   },
   methods: {
@@ -70,6 +149,16 @@ export default {
       } else if (this.mutableDue.percentage > 100) {
         this.mutableDue.percentage = 100;
       }
+    },
+    deleteDue() {
+      this.$emit("deleteDue", this.mutableDue.id);
+    },
+
+    toggleModal() {
+      if (this.mutableDue.status === "paid" && !this.openModal) {
+        return;
+      }
+      this.openModal = !this.openModal;
     },
   },
   watch: {
@@ -83,6 +172,8 @@ export default {
   },
 };
 </script>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 
 <style scoped>
 .due-container {
@@ -100,6 +191,15 @@ export default {
 .due-container .highlight {
   border: solid 2px rgba(52, 96, 220, 1);
   background-color: white;
+}
+
+.due-container .due-container__circle:hover:not(.paid) {
+  border: solid 2px rgba(52, 96, 220, 1);
+  background-color: white;
+  background-image: url("../assets/edit-pencil.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
 }
 
 .due-container .due-container__info {
@@ -121,6 +221,11 @@ export default {
 .due-container .due-container__info .date {
   font-size: 14px;
   font-weight: 400;
+}
+
+.due-container .due-container__info .date--paid {
+  color: rgba(5, 150, 105, 1);
+  font-weight: bolder;
 }
 
 .due-container .due-container__info .amount span {
@@ -181,5 +286,81 @@ export default {
 
 .due-container .due-container__editable-info .editable-date .mx-datepicker {
   width: 150px;
+}
+
+.due-container .paid {
+  background-color: #10b981;
+  background-image: url("../assets/finish-due.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.form-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 10px 0px 10px 5px;
+  height: 100%;
+}
+
+.form-wrapper .form__information {
+  margin: 20px 0px;
+}
+
+.form-wrapper .form__information .form-title {
+  font-weight: 600;
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+.form-wrapper .form__information .form-subtitle {
+  font-weight: 400;
+  font-size: 16px;
+}
+
+.form-wrapper .form__multiselect label,
+.form-wrapper .form__datepicker label {
+  margin-left: 3px;
+  font-weight: 400;
+  font-size: 14px;
+  color: rgba(71, 85, 105, 1);
+}
+
+.form-wrapper .multiselect {
+  width: 200px;
+  margin-top: 5px;
+}
+
+.form-wrapper .form-buttons {
+  width: 90%;
+  display: flex;
+  justify-content: flex-end;
+  margin: 10px 0px;
+}
+
+.form-wrapper .form-buttons .form__button--save {
+  width: 80px;
+  height: 35px;
+  background-color: rgba(29, 78, 216, 1);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.form-wrapper .form-buttons .form__button--delete {
+  width: 30px;
+  height: 30px;
+  border: none;
+  cursor: pointer;
+  background-image: url("../assets/delete-icon.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: white;
+  background-size: cover;
+  margin-right: 35px;
+}
+
+.form-wrapper .form__datepicker {
+  width: 200px;
+  margin-top: 15px;
 }
 </style>

@@ -33,7 +33,7 @@
           </div>
           <div class="options__amount">
             <span class="options__amount--light">Por cobrar:</span>
-            <span class="options__amount--strong">182 UF</span>
+            <span class="options__amount--strong">{{ TOTALTOPAY }} UF</span>
           </div>
         </div>
       </div>
@@ -43,6 +43,7 @@
           :due="due"
           :key="due.id"
           @updateDue="updateDues"
+          @deleteDue="deleteDue"
           :editing="editing"
         ></DueComponent>
         <div class="payment-container__new-payment" @click="createDue">
@@ -66,17 +67,15 @@ export default {
   data() {
     return {
       dues: [],
-      totalToPay: 182,
+      TOTALTOPAY: 182,
       editing: false,
     };
   },
   beforeMount() {
-    console.log("Before mount");
     const dues = get();
     if (dues) {
       this.dues = dues;
     }
-    console.log(this.dues);
   },
   methods: {
     updateDues(data) {
@@ -87,7 +86,7 @@ export default {
     },
     calculateAmount() {
       if (this.dues.length === 0) {
-        return { amount: this.totalToPay, percentage: 100 };
+        return { amount: this.TOTALTOPAY, percentage: 100 };
       }
       const amount = (this.dues[this.dues.length - 1].amount / 2).toFixed(1);
       const percentage = (
@@ -97,6 +96,7 @@ export default {
       return { amount, percentage };
     },
     createDue() {
+      this.editing = true;
       const { amount, percentage } = this.calculateAmount();
       this.dues.push({
         title: "Cuota",
@@ -114,6 +114,21 @@ export default {
         console.log("dues previous modificado", this.dues);
       }
 
+      post([...this.dues]);
+    },
+    deleteDue(id) {
+      const removedDue = this.dues.find((item) => item.id === id);
+      this.dues = this.dues
+        .map((item) => {
+          if (item.id === id - 1) {
+            item.amount = parseInt(item.amount) + parseInt(removedDue.amount);
+            item.percentage =
+              parseInt(item.percentage) + parseInt(removedDue.percentage);
+          }
+
+          return item;
+        })
+        .filter((item) => item.id !== id);
       post([...this.dues]);
     },
   },
