@@ -38,13 +38,15 @@
         </div>
       </div>
       <div class="payment-container__dues" :key="dues.length">
-        <div class="dues__node" v-for="due in duesInOrder" :key="due.id">
+        <div class="dues__node" v-for="due in dues" :key="due.id">
           <DueComponent
             :due="due"
             @updateDue="updateDues"
             @deleteDue="deleteDue"
             :editing="editing"
             :totalDue="TOTALTOPAY"
+            @changePercentage="percentageChange"
+            :key="due.percentage"
           ></DueComponent>
           <hr :class="`line ${due.status === 'paid' ? 'green' : 'blue'}`" />
         </div>
@@ -133,6 +135,32 @@ export default {
           return item;
         })
         .filter((item) => item.id !== id);
+      post([...this.dues]);
+    },
+
+    percentageChange(changeValue, dueID) {
+      let duesLen = this.dues.length;
+
+      if (duesLen === dueID) {
+        duesLen = this.dues.length - 1;
+      }
+
+      const lastDueID = this.dues[duesLen - 1].id;
+
+      const percentage = (
+        parseFloat(this.dues[duesLen - 1].percentage) +
+        parseFloat(changeValue * -1)
+      ).toFixed(1);
+
+      const amount = (
+        (parseFloat(this.dues[duesLen - 1].percentage) * this.TOTALTOPAY) /
+        100
+      ).toFixed(1);
+
+      this.dues = this.dues.map((item) =>
+        item.id === lastDueID ? { ...item, amount, percentage } : item
+      );
+
       post([...this.dues]);
     },
   },

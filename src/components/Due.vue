@@ -153,6 +153,8 @@ export default {
         (parseFloat(this.mutableDue.percentage) * parseFloat(this.totalDue)) /
         100
       ).toFixed(1);
+
+      this.$emit("changePercentage", value, this.mutableDue.id);
     },
     deleteDue() {
       this.$emit("deleteDue", this.mutableDue.id);
