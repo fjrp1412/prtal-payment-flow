@@ -53,8 +53,8 @@
           <hr :class="`line ${due.status === 'paid' ? 'green' : 'blue'}`" />
         </div>
 
-        <div class="payment-container__new-payment" @click="createDue">
-          <div class="circle">
+        <div class="payment-container__new-payment">
+          <div class="circle" @click="createDue">
             <img src="../assets/add-plus.svg" alt="" />
           </div>
         </div>
@@ -77,12 +77,19 @@ export default {
       TOTALTOPAY: 182,
       editing: false,
       currency: "UF",
+      quantityPaidDues: 0,
+      totalPaid: 0,
     };
   },
   beforeMount() {
     const dues = get();
     if (dues) {
       this.dues = dues;
+      this.dues.forEach((item) => {
+        if (item.status === "paid") {
+          this.totalPaid += item.percentage;
+        }
+      });
     }
   },
   methods: {
@@ -92,10 +99,17 @@ export default {
 
        @todo: api request for update 
        */
+      this.dues = this.dues.map((item) => {
+        if (item.id === data.id) {
+          if (item.status !== data.value.status) {
+            this.totalPaid += data.value.percentage;
+          }
+          return { ...data.value };
+        }
 
-      this.dues = this.dues.map((item) =>
-        item.id === data.id ? { ...data.value } : item
-      );
+        return item;
+      });
+
       post([...this.dues]);
     },
     calculateAmount() {
@@ -121,9 +135,13 @@ export default {
 
          @todo: api request to create new due
        */
+      if (this.totalPaid === 100) {
+        return;
+      }
 
       this.editing = true;
       const { amount, percentage } = this.calculateAmount();
+
       this.dues.push({
         title: "Cuota",
         amount: amount,
@@ -132,10 +150,11 @@ export default {
         percentage: percentage,
         date: new Date().toLocaleDateString(),
       });
+
       if (this.dues.length >= 2) {
-        const orderPrevious = this.dues.slice(-1)[0].order - 1;
+        const idPrevious = this.dues.slice(-1)[0].id - 1;
         this.dues = this.dues.map((item) =>
-          item.order === orderPrevious ? { ...item, amount, percentage } : item
+          item.id === idPrevious ? { ...item, amount, percentage } : item
         );
       }
       post([...this.dues]);
@@ -149,20 +168,24 @@ export default {
 
       if (this.dues[0].id !== id) {
         const removedDue = this.dues.find((item) => item.id === id);
+        let idToModify = id;
         this.dues = this.dues
-          .filter((item) => item.id !== id)
+          .filter((item) => item.id !== idToModify)
           .map((item) => {
-            if (item.id === id - 1) {
+            if (item.id === idToModify - 1 && item.status !== "paid") {
               item.percentage = item.percentage + removedDue.percentage;
               item.amount = parseFloat(
                 ((item.percentage * this.TOTALTOPAY) / 100).toFixed(1)
               );
+            } else if (item.id === id - 1 && item.status === "paid") {
+              idToModify += 2;
             }
+
             return item;
           });
 
         this.dues = this.dues.map((item, idx) => {
-          return { ...item, id: idx };
+          return { ...item, id: idx, order: idx };
         });
         post([...this.dues]);
       }
