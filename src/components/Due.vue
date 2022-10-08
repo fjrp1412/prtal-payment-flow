@@ -152,6 +152,9 @@ export default {
   },
   methods: {
     updatePercentage(value) {
+      /*
+      update in frontend and also emit event to it parents for changePercent
+      */
       this.mutableDue.percentage =
         parseFloat(this.mutableDue.percentage) + value;
       if (this.mutableDue.percentage < 0) {
@@ -167,10 +170,16 @@ export default {
       this.$emit("changePercentage", value, this.mutableDue.id);
     },
     deleteDue() {
+      /*
+      This emit event to it parent for deleteDue
+      */
       this.$emit("deleteDue", this.mutableDue.id);
     },
 
     toggleModal() {
+      /*
+      Method for show or hide form modal
+      */
       if (this.mutableDue.status === "paid" && !this.openModal) {
         return;
       }

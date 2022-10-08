@@ -84,12 +84,22 @@ export default {
   },
   methods: {
     updateDues(data) {
+      /*
+       Update dues in frontend UI and also in Local storage
+
+       @todo: api request for update 
+       */
+
       this.dues = this.dues.map((item) =>
         item.id === data.id ? { ...data.value } : item
       );
       post([...this.dues]);
     },
     calculateAmount() {
+      /*
+      Calculate amount and percentage for every new due
+      */
+
       if (this.dues.length === 0) {
         return { amount: this.TOTALTOPAY, percentage: 100 };
       }
@@ -103,6 +113,12 @@ export default {
       return { amount, percentage };
     },
     createDue() {
+      /*
+       Create new Due in frontend UI and also in local storage
+
+         @todo: api request to create new due
+       */
+
       this.editing = true;
       const { amount, percentage } = this.calculateAmount();
       this.dues.push({
@@ -122,6 +138,12 @@ export default {
       post([...this.dues]);
     },
     deleteDue(id) {
+      /*
+      Delete due from frontend UI and also in localstorage. Also, change percentage and amount for previous due
+
+      @todo: api request for delete
+      */
+
       if (this.dues[0].id !== id) {
         const removedDue = this.dues.find((item) => item.id === id);
         this.dues = this.dues
@@ -144,6 +166,13 @@ export default {
     },
 
     percentageChange(changeValue, dueID) {
+      /*
+      Special treatment when change percentage or amount for change this two
+      in the Due which is being edited and also in the last due on the list
+      to mantain the TOTALTOPAY on the large of the nodes
+
+      @todo: api request
+      */
       let duesLen = this.dues.length;
 
       if (duesLen === dueID) {
