@@ -93,10 +93,12 @@ export default {
       if (this.dues.length === 0) {
         return { amount: this.TOTALTOPAY, percentage: 100 };
       }
-      const amount = (this.dues[this.dues.length - 1].amount / 2).toFixed(1);
-      const percentage = (
-        this.dues[this.dues.length - 1].percentage / 2
-      ).toFixed(1);
+      const amount = parseFloat(
+        (this.dues[this.dues.length - 1].amount / 2).toFixed(1)
+      );
+      const percentage = parseFloat(
+        (this.dues[this.dues.length - 1].percentage / 2).toFixed(1)
+      );
 
       return { amount, percentage };
     },
@@ -117,7 +119,6 @@ export default {
           item.order === orderPrevious ? { ...item, amount, percentage } : item
         );
       }
-
       post([...this.dues]);
     },
     deleteDue(id) {
@@ -127,11 +128,10 @@ export default {
           .filter((item) => item.id !== id)
           .map((item) => {
             if (item.id === id - 1) {
-              console.log("entre");
-              item.percentage =
-                parseFloat(item.percentage) + parseFloat(removedDue.percentage);
-              item.amount =
-                (parseFloat(item.percentage) * this.TOTALTOPAY) / 100;
+              item.percentage = item.percentage + removedDue.percentage;
+              item.amount = parseFloat(
+                ((item.percentage * this.TOTALTOPAY) / 100).toFixed(1)
+              );
             }
             return item;
           });
@@ -152,15 +152,13 @@ export default {
 
       const lastDueID = this.dues[duesLen - 1].id;
 
-      const percentage = (
-        parseFloat(this.dues[duesLen - 1].percentage) +
-        parseFloat(changeValue * -1)
-      ).toFixed(1);
+      const percentage = parseFloat(
+        (this.dues[duesLen - 1].percentage + changeValue * -1).toFixed(1)
+      );
 
-      const amount = (
-        (parseFloat(this.dues[duesLen - 1].percentage) * this.TOTALTOPAY) /
-        100
-      ).toFixed(1);
+      const amount = parseFloat(
+        ((this.dues[duesLen - 1].percentage * this.TOTALTOPAY) / 100).toFixed(1)
+      );
 
       this.dues = this.dues.map((item) =>
         item.id === lastDueID ? { ...item, amount, percentage } : item
