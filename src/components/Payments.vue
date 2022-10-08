@@ -107,7 +107,7 @@ export default {
         title: "Cuota",
         amount: amount,
         order: this.dues.length + 1,
-        id: this.dues.length + 1,
+        id: this.dues.slice(-1)[0]?.id + 1 || 1,
         percentage: percentage,
         date: new Date().toLocaleDateString(),
       });
@@ -116,26 +116,31 @@ export default {
         this.dues = this.dues.map((item) =>
           item.order === orderPrevious ? { ...item, amount, percentage } : item
         );
-        console.log("dues previous modificado", this.dues);
       }
 
       post([...this.dues]);
     },
     deleteDue(id) {
-      const removedDue = this.dues.find((item) => item.id === id);
-      this.dues = this.dues
-        .map((item) => {
-          if (item.id === id - 1) {
-            item.amount =
-              parseFloat(item.amount) + parseFloat(removedDue.amount);
-            item.percentage =
-              parseFloat(item.percentage) + parseFloat(removedDue.percentage);
-          }
+      if (this.dues[0].id !== id) {
+        const removedDue = this.dues.find((item) => item.id === id);
+        this.dues = this.dues
+          .filter((item) => item.id !== id)
+          .map((item) => {
+            if (item.id === id - 1) {
+              console.log("entre");
+              item.percentage =
+                parseFloat(item.percentage) + parseFloat(removedDue.percentage);
+              item.amount =
+                (parseFloat(item.percentage) * this.TOTALTOPAY) / 100;
+            }
+            return item;
+          });
 
-          return item;
-        })
-        .filter((item) => item.id !== id);
-      post([...this.dues]);
+        this.dues = this.dues.map((item, idx) => {
+          return { ...item, id: idx };
+        });
+        post([...this.dues]);
+      }
     },
 
     percentageChange(changeValue, dueID) {
@@ -162,13 +167,6 @@ export default {
       );
 
       post([...this.dues]);
-    },
-  },
-  computed: {
-    duesInOrder() {
-      return [...this.dues].sort((a, b) =>
-        parseInt(a.order) < parseInt(b.order) ? -1 : 1
-      );
     },
   },
 };

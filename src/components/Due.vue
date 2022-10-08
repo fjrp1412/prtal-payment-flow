@@ -7,8 +7,18 @@
     <div class="due-container__info">
       <span class="title">{{ mutableDue.title }}</span>
       <span class="amount">
-        <span>{{ mutableDue.amount }} UF</span> ({{
-          mutableDue.percentage
+        <span
+          >{{
+            Number.isInteger(parseFloat(mutableDue.amount))
+              ? parseInt(parseFloat(mutableDue.amount))
+              : mutableDue.amount
+          }}
+          UF</span
+        >
+        ({{
+          Number.isInteger(parseFloat(mutableDue.percentage))
+            ? parseInt(parseFloat(mutableDue.percentage))
+            : mutableDue.percentage
         }}
         %)</span
       >
