@@ -33,7 +33,9 @@
           </div>
           <div class="options__amount">
             <span class="options__amount--light">Por cobrar:</span>
-            <span class="options__amount--strong">{{ TOTALTOPAY }} UF</span>
+            <span class="options__amount--strong"
+              >{{ TOTALTOPAY }} {{ currency }}</span
+            >
           </div>
         </div>
       </div>
@@ -74,6 +76,7 @@ export default {
       dues: [],
       TOTALTOPAY: 182,
       editing: false,
+      currency: "UF",
     };
   },
   beforeMount() {

@@ -1,4 +1,12 @@
 # payment-process
+Project created for Prtal assigment for frontend jr developer.
+
+Use the localstorage as API calls. 
+## Tools
+
+ - Vue 2
+ - vue-multiselect
+ - vue2-datepicker
 
 ## Project setup
 ```
@@ -19,6 +27,3 @@ npm run build
 ```
 npm run lint
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
